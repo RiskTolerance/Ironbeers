@@ -1,12 +1,83 @@
 import React, { Component } from "react";
 import "./App.css";
+import { Switch, Route } from "react-router-dom";
 import HomeCards from "./components/HomeCards";
+import AllBeers from "./components/AllBeers";
+import RandomBeers from "./components/RandomBeers";
+import NewBeers from "./components/NewBeer";
+import axios from "axios";
 
 class App extends Component {
+  state = {
+    allBeers: [],
+    rdmBeers: [{}],
+    ready: false,
+    ranReady: false
+  };
+
+  getBeerList = () => {
+    axios
+      .get("https://ih-beers-api2.herokuapp.com/beers")
+      .then(response => {
+        // console.log(response);
+        this.setState({ allBeers: response.data, ready: true });
+      })
+      .catch(err => console.log(err));
+  };
+
+  getRandomBeerList = () => {
+    axios
+      .get("https://ih-beers-api2.herokuapp.com/beers/random")
+      .then(response => {
+        console.log(response);
+        this.setState({ rdmBeers: response.data, ranReady: true });
+      })
+      .catch(err => console.log(err));
+  };
+
+  componentDidMount() {
+    this.getBeerList();
+    this.getRandomBeerList();
+  }
+
   render() {
     return (
       <div>
-        <HomeCards />
+        <Switch>
+          <Route exact path='/' render={props => <HomeCards {...props} />} />
+        </Switch>
+
+        <Switch>
+          <Route
+            exact
+            path='/allbr'
+            render={props => (
+              <AllBeers
+                {...props}
+                allBeers={this.state.allBeers}
+                ready={this.state.ready}
+              />
+            )}
+          />
+        </Switch>
+
+        <Switch>
+          <Route
+            exact
+            path='/rdmbr'
+            render={props => (
+              <RandomBeers
+                {...props}
+                rdmBeers={this.state.rdmBeers}
+                ranReady={this.state.ranReady}
+              />
+            )}
+          />
+        </Switch>
+
+        <Switch>
+          <Route exact path='/mkbr' render={props => <NewBeers {...props} />} />
+        </Switch>
       </div>
     );
   }
